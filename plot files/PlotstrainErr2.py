@@ -1,0 +1,76 @@
+import numpy as np
+    
+def PlotStrainErr2(coordinatesFEM = None,FSubpb2 = None,x = None,y = None,M = None,N = None): 
+    scipy.io.loadmat('Sample14Exact.mat')
+    ErrStrain = np.zeros((coordinatesFEM.shape[1-1],1))
+    avgErrStrain = 0
+    for i in np.arange(1,coordinatesFEM.shape[1-1]+1).reshape(-1):
+        #     ErrStrain(i) = sqrt( ( FSubpb2(4*i-3) - (2e-4*coordinatesFEM(i,1) + 2e-4 ) )^2  + ...
+#         (FSubpb2(4*i) - (4e-5*coordinatesFEM(i,2) + 2e-4))^2 + (FSubpb2(4*i-2) )^2 + (FSubpb2(4*i-1) )^2  );
+        #     ErrStrain(i) = sqrt( (FSubpb2(4*i-3) - (cos(0.05)-1))^2  + ...
+#         (FSubpb2(4*i) - (cos(0.05)-1))^2 + (FSubpb2(4*i-2)+sin(0.05))^2 + (-FSubpb2(4*i-1)-sin(0.05) )^2  );
+        #     ErrStrain(i) = sqrt(( FSubpb2(4*i-3) - (2/200*cos(1/200*coordinatesFEM(i,1))) )^2  + ...
+#         (FSubpb2(4*i) - (1.5/100*cos(1/100*coordinatesFEM(i,2))) )^2 + (FSubpb2(4*i-2) )^2 + (FSubpb2(4*i-1) )^2 );
+        #     ErrStrain(i) = sqrt(( FSubpb2(4*i-3) - (2/100*cos(1/100*coordinatesFEM(i,1))) )^2  + ...
+#        (FSubpb2(4*i) - (1.5/50*cos(1/50*coordinatesFEM(i,2))) )^2 + (FSubpb2(4*i-2) )^2 + (FSubpb2(4*i-1) )^2 );
+        #     ErrStrain(i) = sqrt((FSubpb2(4*i-3) - (4/200*cos(1/200*coordinatesFEM(i,1))) )^2  + ...
+#        (FSubpb2(4*i) - (3/100*cos(1/100*coordinatesFEM(i,2))) )^2 + (FSubpb2(4*i-2) )^2 + (FSubpb2(4*i-1) )^2 );
+        #     ErrStrain(i) = sqrt((FSubpb2(4*i-3) )^2  + ...
+#       (FSubpb2(4*i) )^2 + (FSubpb2(4*i-2) )^2 + (FSubpb2(4*i-1) )^2 );
+        # Sample-14
+#   ErrStrain(i) = sqrt( (FSubpb2(4*i-3) + Sample14Exact(coordinatesFEM(i,1),3)*1e-6)^2 + (FSubpb2(4*i))^2 + (FSubpb2(4*i-2))^2 + (FSubpb2(4*i-1))^2 );
+        # Sample-1
+        ErrStrain[i] = np.sqrt((FSubpb2(4 * i - 3) - 0) ** 2 + (FSubpb2(4 * i - 2) - 0) ** 2 + (FSubpb2(4 * i - 1) - 0) ** 2 + (FSubpb2(4 * i) - 0) ** 2)
+        avgErrStrain = avgErrStrain + ErrStrain(i) ** 2
+    
+    avgErrStrain = np.sqrt(avgErrStrain / coordinatesFEM.shape[1-1])
+    # figure; surf(reshape(ErrDisp,M,N)'); axis equal; colorbar; view(2); title('||u-u_0||_{L_2}^{1/2}')
+# figure; mesh(x,y,reshape(ErrStrain,M,N)); axis tight; set(gca,'fontSize',20); view(-20, 50); title('Strain Absolute Error')
+    
+    Strainxx = np.zeros((coordinatesFEM.shape[1-1],1))
+    avgStrainxx = 0
+    stdStrainxx = 0
+    xAxis = 0
+    ExactStrainxx = 0
+    for i in np.arange(1,coordinatesFEM.shape[1-1]+1).reshape(-1):
+        Strainxx[i] = FSubpb2(4 * i - 3)
+    
+    Strainxx = reshape(Strainxx,M,N)
+    for i in np.arange(1,M+1).reshape(-1):
+        avgStrainxx[i] = sum(Strainxx(i,:)) / N
+        stdStrainxx[i] = std(Strainxx(i,:))
+        #     ExactStrainxx(i) =  (2e-4*x(i,1)  + 2e-4 ) ;
+#     ExactStrainxx(i) = (2/200*cos(1/200*x(i,1)));
+#     ExactStrainxx(i) =  (2/100*cos(1/100*x(i,1)));
+#     ExactStrainxx(i) = (4/200*cos(1/200*x(i,1)));
+#     ExactStrainxx(i) = 0;
+        ExactStrainxx[i] = - Sample14Exact(x(i,1),3) * 1e-06
+    
+    avgStrainxx = np.transpose(avgStrainxx)
+    stdStrainxx = np.transpose(stdStrainxx)
+    ExactStrainxx = np.transpose(ExactStrainxx)
+    xAxis = x(:,1)
+    #figure; errorbar(xAxis, avgStrainxx  , stdStrainxx );
+    
+    Strainyy = np.zeros((coordinatesFEM.shape[1-1],1))
+    avgStrainyy = 0
+    stdStrainyy = 0
+    yAxis = 0
+    ExactStrainyy = 0
+    for i in np.arange(1,coordinatesFEM.shape[1-1]+1).reshape(-1):
+        Strainyy[i] = FSubpb2(4 * i)
+    
+    Strainyy = reshape(Strainyy,M,N)
+    for i in np.arange(1,N+1).reshape(-1):
+        avgStrainyy[i] = sum(Strainyy(:,i)) / M
+        stdStrainyy[i] = std(Strainyy(:,i))
+        #     ExactStrainyy(i) =  (4e-5*y(1,i) + 2e-4 ) ;
+#     ExactStrainyy(i) =  (1.5/100*cos(1/100*y(1,i)));
+#     ExactStrainyy(i) = (1.5/50*cos(1/50*y(1,i)));
+#     ExactStrainyy(i) = (3/100*cos(1/100*y(1,i)));
+        ExactStrainyy[i] = 0
+    
+    avgStrainyy = np.transpose(avgStrainyy)
+    stdStrainyy = np.transpose(stdStrainyy)
+    ExactStrainyy = np.transpose(ExactStrainyy)
+    yAxis = np.transpose(y(1,:))
